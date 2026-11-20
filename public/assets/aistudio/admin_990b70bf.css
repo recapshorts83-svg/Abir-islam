@@ -1,0 +1,265 @@
+/* ===============================================================
+   Viral Video Pro — অ্যাডমিন প্যানেল স্টাইল
+   =============================================================== */
+
+.admin-body { padding: 0; }
+
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+  align-items: stretch;
+}
+
+/* ---------------- সাইডবার ---------------- */
+.admin-side {
+  flex: 0 0 236px;
+  width: 236px;
+  padding: 18px 14px;
+  border-right: 1px solid var(--line);
+  background: rgba(8, 12, 24, 0.72);
+  backdrop-filter: blur(12px);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.admin-brand { display: flex; align-items: center; gap: 10px; padding: 4px 6px; }
+.admin-brand strong { display: block; font-size: 14px; line-height: 1.2; }
+.admin-brand small { color: var(--muted); font-size: 11px; }
+
+.admin-nav { display: flex; flex-direction: column; gap: 3px; }
+
+.admin-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 11px;
+  border-radius: 10px;
+  font-size: 14px;
+  color: var(--muted);
+  border: 1px solid transparent;
+}
+.admin-nav-link:hover { background: rgba(255, 255, 255, 0.05); color: var(--txt); }
+.admin-nav-link.is-active {
+  background: linear-gradient(135deg, rgba(124, 92, 255, 0.28), rgba(34, 211, 238, 0.14));
+  border-color: rgba(124, 92, 255, 0.4);
+  color: #fff;
+  font-weight: 600;
+}
+.admin-nav-icon { width: 18px; text-align: center; font-size: 13px; opacity: 0.9; }
+
+.admin-side-foot { margin-top: auto; display: flex; flex-direction: column; gap: 2px; }
+.admin-side-foot p { padding: 8px 11px 0; margin: 0; }
+
+/* ---------------- মূল অংশ ---------------- */
+.admin-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; padding: 0 22px 22px; }
+
+.admin-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 0 14px;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: linear-gradient(180deg, rgba(7, 11, 22, 0.96) 65%, rgba(7, 11, 22, 0));
+  backdrop-filter: blur(8px);
+}
+.admin-top h1 { font-size: 20px; margin: 0; }
+.admin-top-right { display: flex; gap: 8px; align-items: center; }
+
+.admin-content { display: flex; flex-direction: column; gap: 16px; }
+.admin-foot { margin-top: 22px; padding-top: 14px; border-top: 1px solid var(--line); font-size: 12px; color: var(--muted); }
+
+/* ---------------- স্ট্যাট কার্ড ---------------- */
+.stat-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+
+.stat-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.stat-label { font-size: 12px; color: var(--muted); }
+.stat-card strong { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; }
+.stat-note { font-size: 11.5px; color: var(--muted); }
+
+/* ---------------- প্যানেল ---------------- */
+.panel {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 16px 18px;
+}
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.panel-head h2 { font-size: 15px; margin: 0; }
+
+.panel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+
+.sep { border: 0; border-top: 1px solid var(--line); margin: 16px 0; }
+
+/* ---------------- টেবিল ---------------- */
+.table-wrap { overflow-x: auto; }
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+.admin-table th,
+.admin-table td {
+  padding: 9px 10px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.admin-table th { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); font-weight: 600; }
+.admin-table tbody tr:hover { background: rgba(255, 255, 255, 0.03); }
+.admin-table td.muted, .admin-table .muted { color: var(--muted); }
+
+.action-cell { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+.inline-form { display: inline-flex; gap: 4px; }
+
+.btn-xs { padding: 4px 9px; font-size: 11.5px; border-radius: 8px; }
+
+.badge {
+  display: inline-block;
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+.badge-ok   { background: rgba(52, 211, 153, 0.14); border-color: rgba(52, 211, 153, 0.32); color: #a7f3d0; }
+.badge-bad  { background: rgba(248, 113, 113, 0.14); border-color: rgba(248, 113, 113, 0.32); color: #fecaca; }
+.badge-warn { background: rgba(251, 191, 36, 0.14); border-color: rgba(251, 191, 36, 0.32); color: #fde68a; }
+.badge-info { background: rgba(124, 92, 255, 0.16); border-color: rgba(124, 92, 255, 0.36); color: #d7d0ff; }
+
+.text-ok { color: var(--ok); font-weight: 600; }
+.text-bad { color: var(--danger); font-weight: 600; }
+
+/* ---------------- ফিল্টার ---------------- */
+.filter-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.filter-row input[type="text"],
+.filter-row select {
+  flex: 1 1 180px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--line);
+  color: var(--txt);
+  font-family: inherit;
+  font-size: 14px;
+  outline: none;
+}
+.filter-row select option { background: #131a33; }
+
+/* ---------------- চার্ট ---------------- */
+.bar-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  height: 168px;
+  padding-top: 8px;
+}
+.bar-col { flex: 1 1 0; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; gap: 4px; }
+.bar-value { font-size: 11px; color: var(--muted); }
+.bar {
+  width: 100%;
+  max-width: 46px;
+  border-radius: 7px 7px 3px 3px;
+  background: linear-gradient(180deg, var(--acc-2), var(--acc-1));
+  box-shadow: 0 6px 16px rgba(124, 92, 255, 0.28);
+  min-height: 4px;
+  transition: height 0.3s ease;
+}
+.bar-label { font-size: 11px; color: var(--muted); }
+
+/* ---------------- র‍্যাংক লিস্ট ---------------- */
+.rank-list { list-style: none; padding: 0; display: flex; flex-direction: column; }
+.rank-list li {
+  display: flex;
+  flex-direction: column;
+  padding: 9px 0;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.07);
+}
+.rank-list li:last-child { border-bottom: 0; }
+.rank-title { font-size: 13.5px; font-weight: 600; }
+
+/* ---------------- পেজার ---------------- */
+.pager { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 12px; }
+.pager-link {
+  min-width: 32px;
+  text-align: center;
+  padding: 5px 9px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+}
+.pager-link.is-active { background: rgba(124, 92, 255, 0.28); border-color: rgba(124, 92, 255, 0.5); color: #fff; }
+
+/* ---------------- ফর্ম গ্রিড ---------------- */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.quick-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.preview-box {
+  border: 1px dashed var(--line);
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.preview-thumb { width: 100%; max-width: 260px; border-radius: 10px; border: 1px solid var(--line); }
+
+/* ---------------- রেসপন্সিভ ---------------- */
+@media (max-width: 900px) {
+  .admin-layout { flex-direction: column; }
+  .admin-side {
+    position: static;
+    width: 100%;
+    height: auto;
+    flex: 0 0 auto;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px 12px 10px;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .admin-nav { flex-direction: row; overflow-x: auto; gap: 6px; padding-bottom: 4px; }
+  .admin-nav-link { flex: 0 0 auto; white-space: nowrap; padding: 7px 11px; font-size: 13px; }
+  .admin-side-foot { flex-direction: row; flex-wrap: wrap; align-items: center; margin-top: 4px; gap: 4px; }
+  .admin-side-foot p { display: none; }
+  .admin-main { padding: 0 14px 18px; }
+  .stat-cards { grid-template-columns: 1fr 1fr; }
+  .panel-grid { grid-template-columns: 1fr; }
+  .form-grid { grid-template-columns: 1fr; }
+  .admin-table th, .admin-table td { white-space: normal; }
+}
+
+@media (max-width: 420px) {
+  .stat-cards { grid-template-columns: 1fr; }
+  .bar-chart { height: 140px; gap: 6px; }
+}
+
+.chart-empty { padding: 26px 4px; text-align: center; line-height: 1.8; }

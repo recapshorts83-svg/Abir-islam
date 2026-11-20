@@ -1,0 +1,6 @@
+{
+  "name": "Viral Video Pro",
+  "description": "Modern responsive video streaming website with curated categories, live search, YouTube and direct video playback, and a secure admin panel.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

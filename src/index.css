@@ -1,0 +1,125 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #070b16;
+  --bg-2: #0c1330;
+  --card: rgba(255, 255, 255, 0.045);
+  --card-2: rgba(255, 255, 255, 0.075);
+  --line: rgba(255, 255, 255, 0.09);
+  --txt: #eaf0ff;
+  --muted: #98a5c8;
+  --acc-1: #7c5cff;
+  --acc-2: #22d3ee;
+  --ok: #34d399;
+  --warn: #fbbf24;
+  --danger: #f87171;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background-color: #05070f;
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: 'Plus Jakarta Sans', 'Hind Siliguri', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  background-color: var(--bg);
+  color: var(--txt);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  position: relative;
+}
+
+/* Fixed radial ambient glow matching the original Viral Video Pro theme */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(1100px 620px at 12% -12%, rgba(124, 92, 255, 0.24), transparent 60%),
+    radial-gradient(900px 520px at 92% 4%, rgba(34, 211, 238, 0.14), transparent 62%),
+    linear-gradient(180deg, var(--bg-2) 0%, var(--bg) 48%, #05070f 100%);
+  pointer-events: none;
+}
+
+.vvp-brand-dot {
+  background: linear-gradient(135deg, var(--acc-1), var(--acc-2));
+  box-shadow: 0 8px 20px rgba(124, 92, 255, 0.4);
+}
+
+.vvp-btn-primary {
+  background: linear-gradient(135deg, var(--acc-1), #5b7cfa 60%, var(--acc-2));
+  box-shadow: 0 10px 24px rgba(105, 92, 255, 0.32);
+  color: #ffffff;
+}
+
+.vvp-btn-primary:hover:not(:disabled) {
+  filter: brightness(1.07);
+}
+
+.vvp-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+}
+
+.vvp-card-interactive {
+  background: var(--card);
+  border: 1px solid var(--line);
+  transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.18s ease, background-color 0.18s ease;
+}
+
+.vvp-card-interactive:hover {
+  transform: translateY(-2px);
+  border-color: rgba(124, 92, 255, 0.42);
+  background: var(--card-2);
+}
+
+.vvp-input {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--line);
+  color: var(--txt);
+  transition: border-color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.vvp-input:focus {
+  outline: none;
+  border-color: rgba(124, 92, 255, 0.7);
+  box-shadow: 0 0 0 3px rgba(124, 92, 255, 0.18);
+}
+
+.vvp-input::placeholder {
+  color: #647194;
+}
+
+.vvp-input option {
+  background: #101730;
+  color: var(--txt);
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}

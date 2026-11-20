@@ -1,0 +1,19 @@
+# Viral Video Pro — Apache কনফিগারেশন
+
+Options -Indexes
+
+# ডেটাবেস ও লগ ফাইল সরাসরি ব্রাউজ থেকে দেখা যাবে না
+<FilesMatch "\.(sqlite|sqlite3|db|log|sql|md)$">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+  </IfModule>
+</FilesMatch>
+
+# PHP এরর লুকানো (লাইভ সাইটে)
+<IfModule mod_php.c>
+  php_flag display_errors Off
+</IfModule>
