@@ -1,7 +1,7 @@
 export type VideoSourceType = 'youtube' | 'direct';
 
 export interface Category {
-  id: number;
+  id: string;
   name: string;
   slug: string;
   color: string;
@@ -11,10 +11,10 @@ export interface Category {
 }
 
 export interface Video {
-  id: number;
+  id: string;
   title: string;
   description: string;
-  category_id: number | null;
+  category_id: string | null;
   category_name?: string | null;
   category_slug?: string | null;
   category_color?: string | null;
@@ -32,7 +32,7 @@ export interface Video {
 }
 
 export interface HomepageSection {
-  id: number;
+  id: string;
   section_key: 'featured' | 'popular' | 'latest' | 'categories' | string;
   title: string;
   subtitle: string;
@@ -50,8 +50,8 @@ export interface SiteSettings {
 }
 
 export interface AdminUser {
-  id: number;
-  username: string;
+  uid: string;
+  email: string;
   name: string;
 }
 

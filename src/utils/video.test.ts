@@ -49,12 +49,15 @@ test('extractStreamableId and getEmbedUrl resolve Streamable, Vimeo, Dailymotion
   assert.equal(getEmbedUrl('/media/cyber_city.mp4'), null);
 });
 
-test('isValidSafeUrl rejects javascript and protocol-relative XSS vectors', () => {
+test('isValidSafeUrl rejects javascript, protocol-relative, and HTML data XSS vectors while allowing image data URLs when enabled', () => {
   assert.equal(isValidSafeUrl('https://example.com/video.mp4'), true);
   assert.equal(isValidSafeUrl('/media/cyber_city.mp4'), true);
   assert.equal(isValidSafeUrl('javascript:alert(1)'), false);
   assert.equal(isValidSafeUrl('//evil.com/x.mp4'), false);
   assert.equal(isValidSafeUrl(''), false);
+  assert.equal(isValidSafeUrl('data:text/html;base64,PHNjcmlwdD4=', true, true), false);
+  assert.equal(isValidSafeUrl('data:image/jpeg;base64,/9j/4AAQ', true, true), true);
+  assert.equal(isValidSafeUrl('data:image/jpeg;base64,/9j/4AAQ', true, false), false);
 });
 
 test('validateVideoInput enforces title, URL, and YouTube constraints', () => {
@@ -86,11 +89,11 @@ test('validateVideoInput enforces title, URL, and YouTube constraints', () => {
 test('resolveThumbnail prefers explicit thumbnail and falls back to YouTube thumbnail', () => {
   assert.equal(
     resolveThumbnail({
-      thumbnail_url: '/uploads/thumbnails/custom.jpg',
+      thumbnail_url: '/src/assets/images/custom.jpg',
       video_url: 'https://youtu.be/aqz-KE-bpKQ',
       source_type: 'youtube',
     }),
-    '/uploads/thumbnails/custom.jpg',
+    '/src/assets/images/custom.jpg',
   );
   assert.equal(
     resolveThumbnail({
@@ -111,10 +114,10 @@ test('formatViews and slugifyCategory format cleanly', () => {
 
 test('selectRelatedVideos prioritizes same category, published only, excluding current', () => {
   const base: Video = {
-    id: 1,
+    id: 'vid-1',
     title: 'Current',
     description: '',
-    category_id: 10,
+    category_id: 'cat-10',
     source_type: 'direct',
     video_url: '/media/a.mp4',
     thumbnail_url: '',
@@ -128,13 +131,13 @@ test('selectRelatedVideos prioritizes same category, published only, excluding c
   };
   const candidates: Video[] = [
     base,
-    { ...base, id: 2, category_id: 20, views: 5000, is_published: 1 },
-    { ...base, id: 3, category_id: 10, views: 100, is_published: 1 },
-    { ...base, id: 4, category_id: 10, views: 9999, is_published: 0 },
+    { ...base, id: 'vid-2', category_id: 'cat-20', views: 5000, is_published: 1 },
+    { ...base, id: 'vid-3', category_id: 'cat-10', views: 100, is_published: 1 },
+    { ...base, id: 'vid-4', category_id: 'cat-10', views: 9999, is_published: 0 },
   ];
   const related = selectRelatedVideos(base, candidates, 6);
   assert.deepEqual(
     related.map((v) => v.id),
-    [3, 2],
+    ['vid-3', 'vid-2'],
   );
 });

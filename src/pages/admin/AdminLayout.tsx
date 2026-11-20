@@ -105,8 +105,8 @@ export function AdminLayout({
             <LogOut className="w-4 h-4 shrink-0" />
             <span>Logout</span>
           </button>
-          <p className="hidden lg:block px-3 pt-2 text-[11px] text-[#98a5c8] truncate">
-            Signed in as {admin.username}
+          <p className="hidden lg:block px-3 pt-2 text-[11px] text-[#98a5c8] truncate" title={admin.email}>
+            Signed in as {admin.email}
           </p>
         </div>
       </aside>

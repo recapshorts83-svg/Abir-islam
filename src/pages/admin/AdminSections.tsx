@@ -31,7 +31,7 @@ export function AdminSections({ onDataChanged }: AdminSectionsProps) {
     setSections(copy.map((s, idx) => ({ ...s, sort_order: idx + 1 })));
   };
 
-  const updateField = (id: number, patch: Partial<HomepageSection>) => {
+  const updateField = (id: string, patch: Partial<HomepageSection>) => {
     setSections((prev) => prev.map((s) => (s.id === id ? { ...s, ...patch } : s)));
   };
 

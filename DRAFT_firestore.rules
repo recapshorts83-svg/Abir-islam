@@ -1,0 +1,310 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global safety net: default deny everything
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    /* -------------------- GLOBAL HELPERS -------------------- */
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isBootstrappedAdmin() {
+      return isVerifiedUser() && request.auth.token.email == 'abirislam202654@gmail.com';
+    }
+
+    function isAdmin() {
+      return isBootstrappedAdmin() ||
+        (isVerifiedUser() && exists(/databases/$(database)/documents/admins/$(request.auth.uid)));
+    }
+
+    /* -------------------- ENTITY VALIDATORS -------------------- */
+
+    function isValidAdmin(data) {
+      return data.keys().hasAll(['email', 'name', 'role', 'createdAt', 'updatedAt']) &&
+        data.keys().hasOnly(['email', 'name', 'role', 'createdAt', 'updatedAt']) &&
+        data.email is string && data.email.size() >= 5 && data.email.size() <= 160 &&
+        data.name is string && data.name.size() >= 1 && data.name.size() <= 100 &&
+        data.role == 'admin' &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidCategory(data) {
+      return data.keys().hasAll(['name', 'slug', 'color', 'sort_order', 'createdAt', 'updatedAt']) &&
+        data.keys().hasOnly(['name', 'slug', 'color', 'sort_order', 'createdAt', 'updatedAt']) &&
+        data.name is string && data.name.size() >= 2 && data.name.size() <= 60 &&
+        data.slug is string && data.slug.size() >= 1 && data.slug.size() <= 80 &&
+        data.slug.matches('^[a-z0-9\\-]+$') &&
+        data.color is string && data.color.size() >= 4 && data.color.size() <= 20 &&
+        data.color.matches('^#[0-9a-fA-F]{3,8}$') &&
+        data.sort_order is int && data.sort_order >= -1000 && data.sort_order <= 10000 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidVideo(data) {
+      return data.keys().hasAll([
+          'title',
+          'description',
+          'category_id',
+          'category_name',
+          'category_slug',
+          'source_type',
+          'video_url',
+          'thumbnail_url',
+          'duration',
+          'views',
+          'is_featured',
+          'is_published',
+          'sort_order',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'title',
+          'description',
+          'category_id',
+          'category_name',
+          'category_slug',
+          'source_type',
+          'video_url',
+          'thumbnail_url',
+          'duration',
+          'views',
+          'is_featured',
+          'is_published',
+          'sort_order',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.title is string && data.title.size() >= 3 && data.title.size() <= 160 &&
+        data.description is string && data.description.size() <= 2000 &&
+        (data.category_id == null || (data.category_id is string && data.category_id.size() >= 1 && data.category_id.size() <= 128)) &&
+        (data.category_name == null || (data.category_name is string && data.category_name.size() <= 60)) &&
+        (data.category_slug == null || (data.category_slug is string && data.category_slug.size() <= 80)) &&
+        data.source_type in ['youtube', 'direct'] &&
+        data.video_url is string && data.video_url.size() >= 1 && data.video_url.size() <= 1000 &&
+        data.video_url.matches('^(https?://|/[^/]).*') &&
+        data.thumbnail_url is string && data.thumbnail_url.size() <= 350000 &&
+        (data.thumbnail_url == '' || data.thumbnail_url.matches('^(https?://|/[^/]|data:image/(jpeg|jpg|png|webp|gif);base64,).*')) &&
+        data.duration is string && data.duration.size() <= 20 &&
+        data.views is int && data.views >= 0 && data.views <= 1000000000 &&
+        data.is_featured in [0, 1] &&
+        data.is_published in [0, 1] &&
+        data.sort_order is int && data.sort_order >= -1000 && data.sort_order <= 10000 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidSection(data) {
+      return data.keys().hasAll([
+          'section_key',
+          'title',
+          'subtitle',
+          'is_enabled',
+          'item_limit',
+          'sort_order',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'section_key',
+          'title',
+          'subtitle',
+          'is_enabled',
+          'item_limit',
+          'sort_order',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.section_key is string && data.section_key.size() >= 1 && data.section_key.size() <= 40 &&
+        data.section_key.matches('^[a-z0-9_\\-]+$') &&
+        data.title is string && data.title.size() >= 1 && data.title.size() <= 80 &&
+        data.subtitle is string && data.subtitle.size() <= 160 &&
+        data.is_enabled in [0, 1] &&
+        data.item_limit is int && data.item_limit >= 1 && data.item_limit <= 24 &&
+        data.sort_order is int && data.sort_order >= 0 && data.sort_order <= 100 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidSettings(data) {
+      return data.keys().hasAll([
+          'site_name',
+          'site_tagline',
+          'notice',
+          'footer_text',
+          'default_language',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'site_name',
+          'site_tagline',
+          'notice',
+          'footer_text',
+          'default_language',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.site_name is string && data.site_name.size() >= 2 && data.site_name.size() <= 60 &&
+        data.site_tagline is string && data.site_tagline.size() <= 140 &&
+        data.notice is string && data.notice.size() <= 200 &&
+        data.footer_text is string && data.footer_text.size() <= 200 &&
+        data.default_language in ['en', 'bn'] &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    /* -------------------- COLLECTIONS -------------------- */
+
+    match /admins/{adminUid} {
+      allow get: if isValidId(adminUid) &&
+        (isAdmin() || (isVerifiedUser() && request.auth.uid == adminUid));
+      allow list: if isBootstrappedAdmin();
+      allow create: if isValidId(adminUid) &&
+        isValidAdmin(incoming()) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time &&
+        isAdmin();
+      allow update: if isValidId(adminUid) &&
+        isValidAdmin(incoming()) &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly(['name', 'updatedAt']) &&
+        isAdmin();
+      allow delete: if isValidId(adminUid) && isAdmin();
+    }
+
+    match /categories/{categoryId} {
+      allow get: if isValidId(categoryId);
+      allow list: if true;
+      allow create: if isValidId(categoryId) &&
+        isValidCategory(incoming()) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time &&
+        isAdmin();
+      allow update: if isValidId(categoryId) &&
+        isValidCategory(incoming()) &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly(['name', 'slug', 'color', 'sort_order', 'updatedAt']) &&
+        isAdmin();
+      allow delete: if isValidId(categoryId) && isAdmin();
+    }
+
+    match /videos/{videoId} {
+      allow get: if isValidId(videoId) && (existing().is_published == 1 || isAdmin());
+      allow list: if resource.data.is_published == 1 || isBootstrappedAdmin();
+      allow create: if isValidId(videoId) &&
+        isValidVideo(incoming()) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time &&
+        (incoming().category_id == null || existsAfter(/databases/$(database)/documents/categories/$(incoming().category_id))) &&
+        isAdmin();
+      allow update: if isValidId(videoId) &&
+        isValidVideo(incoming()) &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        (
+          (
+            isAdmin() &&
+            incoming().diff(existing()).affectedKeys().hasOnly([
+              'title',
+              'description',
+              'category_id',
+              'category_name',
+              'category_slug',
+              'source_type',
+              'video_url',
+              'thumbnail_url',
+              'duration',
+              'views',
+              'is_featured',
+              'is_published',
+              'sort_order',
+              'updatedAt'
+            ]) &&
+            (incoming().category_id == null || existsAfter(/databases/$(database)/documents/categories/$(incoming().category_id)))
+          ) ||
+          (
+            existing().is_published == 1 &&
+            incoming().diff(existing()).affectedKeys().hasOnly(['views', 'updatedAt']) &&
+            incoming().views == existing().views + 1
+          )
+        );
+      allow delete: if isValidId(videoId) && isAdmin();
+    }
+
+    match /homepage_sections/{sectionId} {
+      allow get: if isValidId(sectionId);
+      allow list: if true;
+      allow create: if isValidId(sectionId) &&
+        isValidSection(incoming()) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time &&
+        isAdmin();
+      allow update: if isValidId(sectionId) &&
+        isValidSection(incoming()) &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'section_key',
+          'title',
+          'subtitle',
+          'is_enabled',
+          'item_limit',
+          'sort_order',
+          'updatedAt'
+        ]) &&
+        isAdmin();
+      allow delete: if isValidId(sectionId) && isAdmin();
+    }
+
+    match /settings/{settingId} {
+      allow get: if isValidId(settingId);
+      allow list: if isBootstrappedAdmin();
+      allow create: if isValidId(settingId) &&
+        isValidSettings(incoming()) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time &&
+        isAdmin();
+      allow update: if isValidId(settingId) &&
+        isValidSettings(incoming()) &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'site_name',
+          'site_tagline',
+          'notice',
+          'footer_text',
+          'default_language',
+          'updatedAt'
+        ]) &&
+        isAdmin();
+      allow delete: if isValidId(settingId) && isAdmin();
+    }
+  }
+}

@@ -14,7 +14,7 @@ import { VideoCard } from '../components/VideoCard';
 import { useToast } from '../components/Toast';
 
 interface WatchPageProps {
-  videoId: number;
+  videoId: string;
   lang: Language;
   onNavigate: (path: string) => void;
 }
@@ -25,7 +25,7 @@ export function WatchPage({ videoId, lang, onNavigate }: WatchPageProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [streamFailed, setStreamFailed] = useState(false);
-  const countedRef = useRef<number | null>(null);
+  const countedRef = useRef<string | null>(null);
   const { showToast } = useToast();
   const t = COPY[lang];
 
@@ -45,7 +45,7 @@ export function WatchPage({ videoId, lang, onNavigate }: WatchPageProps) {
           countedRef.current = videoId;
           incrementVideoView(videoId)
             .then((nextViews) => {
-              if (active) {
+              if (active && typeof nextViews === 'number') {
                 setVideo((prev) => (prev ? { ...prev, views: nextViews } : prev));
               }
             })

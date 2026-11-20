@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import type { AdminUser, Category, HomepageSection, SiteSettings } from './types/video';
-import { adminLogout, fetchAdminSession, fetchSiteData, setOnUnauthorized } from './api/client';
+import { adminLogout, fetchSiteData, subscribeAdminAuth } from './api/client';
 import type { Language } from './utils/i18n';
 import { ToastProvider, useToast } from './components/Toast';
 import { PublicLayout } from './components/PublicLayout';
@@ -33,18 +33,18 @@ function AppShell() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [lang, setLang] = useState<Language>('en');
   const [searchQuery, setSearchQuery] = useState('');
-  const [siteLoaded, setSiteLoaded] = useState(false);
+  const initialLangAppliedRef = React.useRef(false);
 
   const [adminChecked, setAdminChecked] = useState(false);
   const [adminUser, setAdminUser] = useState<AdminUser | null>(null);
   const { showToast } = useToast();
 
   useEffect(() => {
-    setOnUnauthorized(() => {
-      setAdminUser(null);
-      setAdminChecked(true);
+    const unsubscribe = subscribeAdminAuth((admin, ready) => {
+      setAdminUser(admin);
+      if (ready) setAdminChecked(true);
     });
-    return () => setOnUnauthorized(null);
+    return () => unsubscribe();
   }, []);
 
   const loadSite = useCallback(async () => {
@@ -53,14 +53,15 @@ function AppShell() {
       setSettings(data.settings);
       setSections(data.sections);
       setCategories(data.categories);
-      setLang((prev) => (siteLoaded ? prev : data.settings.default_language));
+      if (!initialLangAppliedRef.current) {
+        initialLangAppliedRef.current = true;
+        setLang(data.settings.default_language);
+      }
       document.title = `${data.settings.site_name} — Video Streaming`;
     } catch {
       // Keep graceful defaults if bootstrap fails briefly
-    } finally {
-      setSiteLoaded(true);
     }
-  }, [siteLoaded]);
+  }, []);
 
   useEffect(() => {
     void loadSite();
@@ -85,24 +86,6 @@ function AppShell() {
   }, []);
 
   const isAdminRoute = route.pathname.startsWith('/admin');
-
-  useEffect(() => {
-    if (!isAdminRoute) return;
-    let active = true;
-    fetchAdminSession()
-      .then((res) => {
-        if (active) setAdminUser(res.authenticated ? res.admin : null);
-      })
-      .catch(() => {
-        if (active) setAdminUser(null);
-      })
-      .finally(() => {
-        if (active) setAdminChecked(true);
-      });
-    return () => {
-      active = false;
-    };
-  }, [isAdminRoute]);
 
   const handleSearchSubmit = (q: string) => {
     setSearchQuery(q);
@@ -135,6 +118,7 @@ function AppShell() {
           onLoginSuccess={(admin) => {
             setAdminUser(admin);
             setAdminChecked(true);
+            void loadSite();
             showToast(`Welcome back, ${admin.name}`, 'ok');
             navigate('/admin');
           }}
@@ -156,7 +140,7 @@ function AppShell() {
       pageTitle = 'Homepage Video Sections';
     } else if (route.pathname.startsWith('/admin/settings')) {
       activeTab = 'settings';
-      pageTitle = 'Website & Security Settings';
+      pageTitle = 'Website & Account Settings';
     }
 
     return (
@@ -183,7 +167,6 @@ function AppShell() {
               document.title = `${next.site_name} — Video Streaming`;
               void loadSite();
             }}
-            onAdminUpdated={(nextAdmin) => setAdminUser(nextAdmin)}
           />
         )}
       </AdminLayout>
@@ -191,7 +174,7 @@ function AppShell() {
   }
 
   /* -------------------- PUBLIC VIDEO ROUTES -------------------- */
-  const watchMatch = route.pathname.match(/^\/watch\/(\d+)$/);
+  const watchMatch = route.pathname.match(/^\/watch\/([^/]+)$/);
   const searchParams = new URLSearchParams(route.search);
   const initialCategory = searchParams.get('cat') || 'all';
 
@@ -206,7 +189,11 @@ function AppShell() {
       onNavigate={navigate}
     >
       {watchMatch ? (
-        <WatchPage videoId={Number(watchMatch[1])} lang={lang} onNavigate={navigate} />
+        <WatchPage
+          videoId={decodeURIComponent(watchMatch[1])}
+          lang={lang}
+          onNavigate={navigate}
+        />
       ) : route.pathname.startsWith('/categories') ? (
         <BrowsePage
           mode="categories"

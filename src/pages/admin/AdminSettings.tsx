@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { KeyRound, Save } from 'lucide-react';
+import { CheckCircle2, Save, ShieldCheck } from 'lucide-react';
 import type { AdminUser, SiteSettings } from '../../types/video';
-import { updateAdminPassword, updateAdminSettings } from '../../api/client';
+import { updateAdminSettings } from '../../api/client';
 import { useToast } from '../../components/Toast';
 
 interface AdminSettingsProps {
   settings: SiteSettings;
   admin: AdminUser;
   onSettingsUpdated: (next: SiteSettings) => void;
-  onAdminUpdated: (next: AdminUser) => void;
 }
 
 function normalizeSettings(s?: Partial<SiteSettings>): SiteSettings {
@@ -21,30 +20,15 @@ function normalizeSettings(s?: Partial<SiteSettings>): SiteSettings {
   };
 }
 
-export function AdminSettings({
-  settings,
-  admin,
-  onSettingsUpdated,
-  onAdminUpdated,
-}: AdminSettingsProps) {
+export function AdminSettings({ settings, admin, onSettingsUpdated }: AdminSettingsProps) {
   const [form, setForm] = useState<SiteSettings>(() => normalizeSettings(settings));
   const [savingSite, setSavingSite] = useState(false);
-
-  const [username, setUsername] = useState(() => admin?.username ?? '');
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [savingPassword, setSavingPassword] = useState(false);
 
   const { showToast } = useToast();
 
   useEffect(() => {
     setForm(normalizeSettings(settings));
   }, [settings]);
-
-  useEffect(() => {
-    setUsername(admin?.username ?? '');
-  }, [admin?.username]);
 
   const handleSaveSite = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,31 +41,6 @@ export function AdminSettings({
       showToast(err instanceof Error ? err.message : 'Failed to save settings.', 'err');
     } finally {
       setSavingSite(false);
-    }
-  };
-
-  const handleSavePassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newPassword !== confirmPassword) {
-      showToast('New passwords do not match.', 'err');
-      return;
-    }
-    setSavingPassword(true);
-    try {
-      const updatedAdmin = await updateAdminPassword({
-        username: username.trim(),
-        currentPassword,
-        newPassword,
-      });
-      onAdminUpdated(updatedAdmin);
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
-      showToast('Administrator credentials updated.', 'ok');
-    } catch (err) {
-      showToast(err instanceof Error ? err.message : 'Password update failed.', 'err');
-    } finally {
-      setSavingPassword(false);
     }
   };
 
@@ -167,67 +126,35 @@ export function AdminSettings({
         </div>
       </form>
 
-      <form onSubmit={handleSavePassword} className="lg:col-span-5 rounded-2xl vvp-card p-6 space-y-4">
-        <h2 className="text-base font-bold text-[#eaf0ff]">Administrator Security</h2>
-
-        <label className="block space-y-1.5">
-          <span className="block text-xs font-medium text-[#98a5c8]">Admin Username</span>
-          <input
-            type="text"
-            required
-            pattern="[a-z0-9_]{3,30}"
-            value={username ?? ''}
-            onChange={(e) => setUsername(e.target.value.toLowerCase())}
-            className="w-full h-10 px-3.5 rounded-xl text-sm vvp-input"
-          />
-        </label>
-
-        <label className="block space-y-1.5">
-          <span className="block text-xs font-medium text-[#98a5c8]">Current Password</span>
-          <input
-            type="password"
-            required
-            value={currentPassword ?? ''}
-            onChange={(e) => setCurrentPassword(e.target.value)}
-            className="w-full h-10 px-3.5 rounded-xl text-sm vvp-input"
-          />
-        </label>
-
-        <label className="block space-y-1.5">
-          <span className="block text-xs font-medium text-[#98a5c8]">New Password</span>
-          <input
-            type="password"
-            required
-            minLength={6}
-            value={newPassword ?? ''}
-            onChange={(e) => setNewPassword(e.target.value)}
-            className="w-full h-10 px-3.5 rounded-xl text-sm vvp-input"
-          />
-        </label>
-
-        <label className="block space-y-1.5">
-          <span className="block text-xs font-medium text-[#98a5c8]">Confirm New Password</span>
-          <input
-            type="password"
-            required
-            minLength={6}
-            value={confirmPassword ?? ''}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            className="w-full h-10 px-3.5 rounded-xl text-sm vvp-input"
-          />
-        </label>
-
-        <div className="pt-2">
-          <button
-            type="submit"
-            disabled={savingPassword}
-            className="w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold bg-white/10 border border-white/15 hover:bg-white/15 text-white disabled:opacity-60"
-          >
-            <KeyRound className="w-4 h-4" />
-            <span>{savingPassword ? 'Updating...' : 'Update Admin Credentials'}</span>
-          </button>
+      <section className="lg:col-span-5 rounded-2xl vvp-card p-6 space-y-4">
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-xl bg-[#7c5cff]/20 border border-[#7c5cff]/40 flex items-center justify-center text-[#22d3ee]">
+            <ShieldCheck className="w-5 h-5" />
+          </div>
+          <div>
+            <h2 className="text-base font-bold text-[#eaf0ff]">Administrator Security</h2>
+            <p className="text-xs text-[#98a5c8]">Google Sign-In &amp; Cloud Firestore</p>
+          </div>
         </div>
-      </form>
+
+        <div className="rounded-xl bg-white/[0.03] border border-white/10 p-4 space-y-2">
+          <p className="text-xs text-[#98a5c8]">Signed-in Administrator</p>
+          <p className="text-sm font-semibold text-[#eaf0ff]">{admin.name}</p>
+          <p className="text-xs text-[#22d3ee] break-all">{admin.email}</p>
+        </div>
+
+        <div className="flex items-start gap-2.5 text-xs text-[#cbd5f1] leading-relaxed">
+          <CheckCircle2 className="w-4 h-4 text-[#34d399] shrink-0 mt-0.5" />
+          <p>
+            Authentication and database persistence run directly on Firebase Cloud, making your built{' '}
+            <code className="px-1.5 py-0.5 rounded bg-white/10 text-[#eaf0ff]">dist</code> folder ready for static hosting on Netlify without a Node server.
+          </p>
+        </div>
+
+        <div className="rounded-xl bg-[#22d3ee]/10 border border-[#22d3ee]/25 p-3.5 text-xs text-[#bdf1ff] leading-relaxed">
+          When publishing on a Netlify URL (such as <code className="font-mono">your-site.netlify.app</code>), add that domain under Firebase Console &rarr; Authentication &rarr; Settings &rarr; Authorized domains so Google Sign-In works on your live domain.
+        </div>
+      </section>
     </div>
   );
 }

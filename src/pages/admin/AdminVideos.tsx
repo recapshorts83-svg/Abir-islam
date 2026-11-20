@@ -34,7 +34,7 @@ interface AdminVideosProps {
 }
 
 interface VideoFormState {
-  id: number | null;
+  id: string | null;
   title: string;
   description: string;
   category_id: string;
@@ -107,11 +107,11 @@ export function AdminVideos({ queryString, onDataChanged }: AdminVideosProps) {
       if (!res) return;
       const params = new URLSearchParams(queryString);
       if (params.get('new') === '1') {
-        setForm({ ...EMPTY_FORM, category_id: res.cList[0]?.id ? String(res.cList[0].id) : '' });
+        setForm({ ...EMPTY_FORM, category_id: res.cList[0]?.id ?? '' });
         setFormError('');
         setEditorOpen(true);
       } else if (params.get('edit')) {
-        const targetId = Number(params.get('edit'));
+        const targetId = params.get('edit');
         const found = res.vList.find((v) => v.id === targetId);
         if (found) openEdit(found);
       }
@@ -199,7 +199,7 @@ export function AdminVideos({ queryString, onDataChanged }: AdminVideosProps) {
     const validation = validateVideoInput({
       title: form.title,
       description: form.description,
-      category_id: form.category_id ? Number(form.category_id) : null,
+      category_id: form.category_id || null,
       source_type: form.source_type,
       video_url: form.video_url,
       thumbnail_url: form.thumbnail_url,
@@ -214,7 +214,7 @@ export function AdminVideos({ queryString, onDataChanged }: AdminVideosProps) {
       const payload = {
         title: form.title.trim(),
         description: form.description.trim(),
-        category_id: form.category_id ? Number(form.category_id) : null,
+        category_id: form.category_id || null,
         source_type: form.source_type,
         video_url: form.video_url.trim(),
         thumbnail_url: form.thumbnail_url.trim(),
@@ -600,7 +600,7 @@ export function AdminVideos({ queryString, onDataChanged }: AdminVideosProps) {
                     type="text"
                     value={form.thumbnail_url ?? ''}
                     onChange={(e) => setForm((p) => ({ ...p, thumbnail_url: e.target.value }))}
-                    placeholder="Or paste thumbnail URL (/uploads/... or https://...)"
+                    placeholder="Or paste thumbnail URL (https://... or upload an image)"
                     className="w-full h-10 px-3.5 rounded-xl text-sm vvp-input"
                   />
                 </div>

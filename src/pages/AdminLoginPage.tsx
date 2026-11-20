@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Lock } from 'lucide-react';
+import { ArrowLeft, ShieldCheck } from 'lucide-react';
 import type { AdminUser, SiteSettings } from '../types/video';
-import { adminLogin } from '../api/client';
+import { adminLoginWithGoogle } from '../api/client';
 
 interface AdminLoginPageProps {
   settings: SiteSettings;
@@ -10,20 +10,26 @@ interface AdminLoginPageProps {
 }
 
 export function AdminLoginPage({ settings, onLoginSuccess, onNavigate }: AdminLoginPageProps) {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleGoogleSignIn = async () => {
     setError('');
     setSubmitting(true);
     try {
-      const admin = await adminLogin(username.trim(), password);
+      const admin = await adminLoginWithGoogle();
       onLoginSuccess(admin);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed.');
+      const msg = err instanceof Error ? err.message : 'Google sign-in failed.';
+      if (msg.includes('popup-closed-by-user')) {
+        setError('Sign-in popup was closed before completing.');
+      } else if (msg.includes('unauthorized-domain')) {
+        setError(
+          'This domain is not yet authorized in Firebase Authentication. Add this domain under Firebase Console → Authentication → Settings → Authorized domains.',
+        );
+      } else {
+        setError(msg);
+      }
     } finally {
       setSubmitting(false);
     }
@@ -50,6 +56,10 @@ export function AdminLoginPage({ settings, onLoginSuccess, onNavigate }: AdminLo
             </div>
           </div>
 
+          <p className="text-sm text-[#cbd5f1] leading-relaxed">
+            Sign in with your authorized administrator Google account to manage videos, categories, and site settings.
+          </p>
+
           {error && (
             <div
               role="alert"
@@ -59,43 +69,15 @@ export function AdminLoginPage({ settings, onLoginSuccess, onNavigate }: AdminLo
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <label className="block space-y-1.5">
-              <span className="block text-xs font-medium text-[#98a5c8]">Admin Username</span>
-              <input
-                type="text"
-                value={username ?? ''}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-                autoFocus
-                autoComplete="username"
-                placeholder="admin"
-                className="w-full h-11 px-3.5 rounded-xl text-sm vvp-input"
-              />
-            </label>
-
-            <label className="block space-y-1.5">
-              <span className="block text-xs font-medium text-[#98a5c8]">Password</span>
-              <input
-                type="password"
-                value={password ?? ''}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                autoComplete="current-password"
-                placeholder="••••••••"
-                className="w-full h-11 px-3.5 rounded-xl text-sm vvp-input"
-              />
-            </label>
-
-            <button
-              type="submit"
-              disabled={submitting}
-              className="w-full h-11 rounded-xl text-sm font-semibold vvp-btn-primary inline-flex items-center justify-center gap-2 disabled:opacity-60"
-            >
-              <Lock className="w-4 h-4" />
-              <span>{submitting ? 'Signing in...' : 'Sign In to Admin'}</span>
-            </button>
-          </form>
+          <button
+            type="button"
+            disabled={submitting}
+            onClick={handleGoogleSignIn}
+            className="w-full h-11 rounded-xl text-sm font-semibold vvp-btn-primary inline-flex items-center justify-center gap-2.5 disabled:opacity-60"
+          >
+            <ShieldCheck className="w-4 h-4" />
+            <span>{submitting ? 'Verifying Google account...' : 'Sign in with Google'}</span>
+          </button>
         </div>
 
         <div className="mt-5 text-center">

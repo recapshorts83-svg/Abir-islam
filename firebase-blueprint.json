@@ -1,0 +1,310 @@
+{
+  "entities": {
+    "Admin": {
+      "title": "Admin",
+      "description": "Authorized administrator account authorized to manage catalog content and site configuration.",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "minLength": 5,
+          "maxLength": 160,
+          "description": "Verified Google account email address."
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "description": "Display name of the administrator."
+        },
+        "role": {
+          "type": "string",
+          "enum": ["admin"],
+          "description": "Administrator role identifier."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the admin record was created."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the admin record was last updated."
+        }
+      },
+      "required": ["email", "name", "role", "createdAt", "updatedAt"]
+    },
+    "Category": {
+      "title": "Category",
+      "description": "Public video category used to group and filter catalog entries.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 60,
+          "description": "Human-readable category label."
+        },
+        "slug": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "pattern": "^[a-z0-9-]+$",
+          "description": "URL-safe lowercase slug."
+        },
+        "color": {
+          "type": "string",
+          "minLength": 4,
+          "maxLength": 20,
+          "pattern": "^#[0-9a-fA-F]{3,8}$",
+          "description": "Hex accent color."
+        },
+        "sort_order": {
+          "type": "integer",
+          "description": "Ordering weight for display."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when created."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when last updated."
+        }
+      },
+      "required": ["name", "slug", "color", "sort_order", "createdAt", "updatedAt"]
+    },
+    "Video": {
+      "title": "Video",
+      "description": "Video catalog entry supporting direct MP4/embed URLs and YouTube URLs.",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 160,
+          "description": "Video title."
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 2000,
+          "description": "Video summary or notes."
+        },
+        "category_id": {
+          "type": "string",
+          "maxLength": 128,
+          "description": "Optional referencing category document ID."
+        },
+        "category_name": {
+          "type": "string",
+          "maxLength": 60,
+          "description": "Denormalized category display name."
+        },
+        "category_slug": {
+          "type": "string",
+          "maxLength": 80,
+          "description": "Denormalized category slug."
+        },
+        "source_type": {
+          "type": "string",
+          "enum": ["youtube", "direct"],
+          "description": "Playback source type."
+        },
+        "video_url": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "description": "Direct MP4/embed URL or YouTube watch URL."
+        },
+        "thumbnail_url": {
+          "type": "string",
+          "maxLength": 350000,
+          "description": "Thumbnail image URL or compressed image Data URL."
+        },
+        "duration": {
+          "type": "string",
+          "maxLength": 20,
+          "description": "Formatted duration string such as 04:20."
+        },
+        "views": {
+          "type": "integer",
+          "description": "Total video view count."
+        },
+        "is_featured": {
+          "type": "integer",
+          "enum": [0, 1],
+          "description": "1 when featured in spotlight, 0 otherwise."
+        },
+        "is_published": {
+          "type": "integer",
+          "enum": [0, 1],
+          "description": "1 when publicly visible, 0 for draft."
+        },
+        "sort_order": {
+          "type": "integer",
+          "description": "Manual catalog ordering weight."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when created."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when last updated."
+        }
+      },
+      "required": [
+        "title",
+        "description",
+        "source_type",
+        "video_url",
+        "thumbnail_url",
+        "duration",
+        "views",
+        "is_featured",
+        "is_published",
+        "sort_order",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "HomepageSection": {
+      "title": "HomepageSection",
+      "description": "Configurable homepage video section layout.",
+      "type": "object",
+      "properties": {
+        "section_key": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "pattern": "^[a-z0-9_-]+$",
+          "description": "Section identifier key (featured, popular, latest, categories)."
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "description": "Section heading."
+        },
+        "subtitle": {
+          "type": "string",
+          "maxLength": 160,
+          "description": "Section subtitle."
+        },
+        "is_enabled": {
+          "type": "integer",
+          "enum": [0, 1],
+          "description": "1 if shown on homepage, 0 if hidden."
+        },
+        "item_limit": {
+          "type": "integer",
+          "description": "Maximum number of items displayed in the section."
+        },
+        "sort_order": {
+          "type": "integer",
+          "description": "Display order on the homepage."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when created."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when last updated."
+        }
+      },
+      "required": [
+        "section_key",
+        "title",
+        "subtitle",
+        "is_enabled",
+        "item_limit",
+        "sort_order",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "SiteSettings": {
+      "title": "SiteSettings",
+      "description": "Global site branding, notice banner, footer, and language defaults.",
+      "type": "object",
+      "properties": {
+        "site_name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 60,
+          "description": "Website title."
+        },
+        "site_tagline": {
+          "type": "string",
+          "maxLength": 140,
+          "description": "Website tagline."
+        },
+        "notice": {
+          "type": "string",
+          "maxLength": 200,
+          "description": "Optional notice banner displayed on public pages."
+        },
+        "footer_text": {
+          "type": "string",
+          "maxLength": 200,
+          "description": "Footer tagline text."
+        },
+        "default_language": {
+          "type": "string",
+          "enum": ["en", "bn"],
+          "description": "Default UI language."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when created."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when last updated."
+        }
+      },
+      "required": [
+        "site_name",
+        "site_tagline",
+        "notice",
+        "footer_text",
+        "default_language",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/admins/{adminUid}": {
+      "schema": { "$ref": "#/entities/Admin" },
+      "description": "Administrator access control list storing authorized Google accounts."
+    },
+    "/categories/{categoryId}": {
+      "schema": { "$ref": "#/entities/Category" },
+      "description": "Video categories readable publicly and managed by admins."
+    },
+    "/videos/{videoId}": {
+      "schema": { "$ref": "#/entities/Video" },
+      "description": "Video catalog; published entries are readable publicly and all entries are managed by admins."
+    },
+    "/homepage_sections/{sectionId}": {
+      "schema": { "$ref": "#/entities/HomepageSection" },
+      "description": "Homepage layout sections readable publicly and configured by admins."
+    },
+    "/settings/{settingId}": {
+      "schema": { "$ref": "#/entities/SiteSettings" },
+      "description": "Site-wide configuration document (settings/site) readable publicly and managed by admins."
+    }
+  }
+}

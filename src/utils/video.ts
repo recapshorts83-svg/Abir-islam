@@ -1,6 +1,7 @@
 import type { Video, VideoSourceType } from '../types/video';
 
 const BN_DIGITS = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+const IMAGE_DATA_URL_RE = /^data:image\/(jpeg|jpg|png|webp|gif);base64,[A-Za-z0-9+/=]+$/i;
 
 export function toBengaliDigits(input: string | number): string {
   return String(input).replace(/[0-9]/g, (d) => BN_DIGITS[Number(d)] ?? d);
@@ -69,9 +70,16 @@ export function detectSourceType(url: string): VideoSourceType {
   return extractYouTubeId(url) ? 'youtube' : 'direct';
 }
 
-export function isValidSafeUrl(raw: string, allowRelativePath = true): boolean {
+export function isValidSafeUrl(
+  raw: string,
+  allowRelativePath = true,
+  allowImageDataUrl = false,
+): boolean {
   const trimmed = raw.trim();
   if (!trimmed) return false;
+  if (allowImageDataUrl && IMAGE_DATA_URL_RE.test(trimmed) && trimmed.length <= 350_000) {
+    return true;
+  }
   if (allowRelativePath && trimmed.startsWith('/') && !trimmed.startsWith('//')) {
     return !/[<>"'`]/.test(trimmed);
   }
@@ -83,7 +91,9 @@ export function isValidSafeUrl(raw: string, allowRelativePath = true): boolean {
   }
 }
 
-export function resolveThumbnail(video: Pick<Video, 'thumbnail_url' | 'video_url' | 'source_type'>): string {
+export function resolveThumbnail(
+  video: Pick<Video, 'thumbnail_url' | 'video_url' | 'source_type'>,
+): string {
   if (video.thumbnail_url && video.thumbnail_url.trim() !== '') {
     return video.thumbnail_url.trim();
   }
@@ -133,7 +143,7 @@ export function slugifyCategory(name: string): string {
 export interface VideoInputPayload {
   title: string;
   description?: string;
-  category_id?: number | null;
+  category_id?: string | null;
   source_type?: VideoSourceType;
   video_url: string;
   thumbnail_url?: string;
@@ -151,15 +161,15 @@ export function validateVideoInput(input: VideoInputPayload): { ok: true } | { o
   if (title.length < 3 || title.length > 160) {
     return { ok: false, error: 'Video title must be between 3 and 160 characters.' };
   }
-  if (!isValidSafeUrl(videoUrl, true)) {
-    return { ok: false, error: 'Please provide a valid HTTP(S) or local video URL.' };
+  if (videoUrl.length > 1000 || !isValidSafeUrl(videoUrl, true, false)) {
+    return { ok: false, error: 'Please provide a valid HTTP(S) or local video URL (max 1000 chars).' };
   }
   const sourceType = input.source_type ?? detectSourceType(videoUrl);
   if (sourceType === 'youtube' && !extractYouTubeId(videoUrl)) {
     return { ok: false, error: 'Please provide a valid YouTube video URL.' };
   }
-  if (thumbUrl !== '' && !isValidSafeUrl(thumbUrl, true)) {
-    return { ok: false, error: 'Thumbnail URL must be a valid image URL or uploaded path.' };
+  if (thumbUrl !== '' && !isValidSafeUrl(thumbUrl, true, true)) {
+    return { ok: false, error: 'Thumbnail must be a valid image URL or uploaded image.' };
   }
   return { ok: true };
 }
@@ -172,7 +182,7 @@ export function selectRelatedVideos(currentVideo: Video, candidates: Video[], li
       const bSameCat = b.category_id && b.category_id === currentVideo.category_id ? 1 : 0;
       if (aSameCat !== bSameCat) return bSameCat - aSameCat;
       if (b.views !== a.views) return b.views - a.views;
-      return b.id - a.id;
+      return b.id.localeCompare(a.id);
     })
     .slice(0, limit);
 }

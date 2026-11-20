@@ -1,10 +1,6 @@
-import fs from 'node:fs';
 import path from 'node:path';
 import express from 'express';
-import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
-import { getDb } from './server/db.ts';
-import { createApiRouter } from './server/routes.ts';
 
 dotenv.config();
 
@@ -12,31 +8,17 @@ const PORT = Number(process.env.PORT || 3000);
 const IS_PROD = process.env.NODE_ENV === 'production';
 
 async function startServer() {
-  getDb();
-
   const app = express();
   app.set('trust proxy', 1);
   app.disable('x-powered-by');
-  app.use(cookieParser());
-  app.use(express.json({ limit: '2mb' }));
-  app.use(express.urlencoded({ extended: true }));
 
-  // Basic security headers (keeping iframe embedding compatible with AI Studio preview)
   app.use((_req, res, next) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
     next();
   });
 
-  // Serve uploaded thumbnails and local media streams
-  const uploadsDir = path.resolve(process.cwd(), 'uploads');
-  if (!fs.existsSync(path.join(uploadsDir, 'thumbnails'))) {
-    fs.mkdirSync(path.join(uploadsDir, 'thumbnails'), { recursive: true });
-  }
-  app.use('/uploads', express.static(uploadsDir, { maxAge: '7d' }));
   app.use('/media', express.static(path.resolve(process.cwd(), 'public', 'media'), { maxAge: '7d' }));
-
-  app.use('/api', createApiRouter());
 
   if (!IS_PROD) {
     const { createServer: createViteServer } = await import('vite');

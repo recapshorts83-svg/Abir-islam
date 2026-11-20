@@ -23,7 +23,7 @@ export function AdminCategories({ onDataChanged }: AdminCategoriesProps) {
   const [newOrder, setNewOrder] = useState('1');
   const [adding, setAdding] = useState(false);
 
-  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
   const [editColor, setEditColor] = useState('#7c5cff');
   const [editOrder, setEditOrder] = useState('0');
@@ -82,7 +82,7 @@ export function AdminCategories({ onDataChanged }: AdminCategoriesProps) {
     setEditOrder(String(cat.sort_order ?? 0));
   };
 
-  const saveEdit = async (id: number) => {
+  const saveEdit = async (id: string) => {
     if (editName.trim().length < 2) {
       showToast('Category name must be at least 2 characters.', 'err');
       return;
